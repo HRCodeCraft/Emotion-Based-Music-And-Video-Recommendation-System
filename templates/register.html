@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <!--=============== REMIXICONS ===============-->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="">
+   <!--==================Shortcut Icon============-->
+   <link rel="icon" href="static/images/logo.png" type="image/x-icon">
+   <!--=============== CSS ========================-->
+   <link rel="stylesheet" href="static/assets/css/styles.css">
+   <title>Registration - VibeCheck Twitter</title>
+</head>
+
+
+<body>
+   <div class="login">
+      <img src="static/assets/img/login-bg.png" alt="image" class="login__bg">
+      <form method="POST" action="/register" class="login__form">
+         {{ form.hidden_tag() }}
+         <h1 class="login__title">Register</h1>
+
+         <div class="login__inputs">
+            <div class="login__box">
+               {{ form.name(class="login__input", id="name", placeholder="Full Name", required=True) }}
+               <i class="ri-user-fill"></i>
+            </div>
+
+            <div class="login__box">
+               {{ form.email(class="login__input", id="email", placeholder="Email ID", required=True) }}
+               <i class="ri-mail-fill"></i>
+            </div>
+
+            <div class="login__box">
+               {{ form.password(class="login__input", id="password", placeholder="Password", required=True) }}
+               <i class="ri-lock-2-fill"></i>
+            </div>
+
+            <div class="login__box">
+               {{ form.confirm_password(class="login__input", id="confirm_password", placeholder="Confirm Password",
+               required=True) }}
+               <i class="ri-lock-2-fill"></i>
+            </div>
+         </div>
+
+         <div class="login__check">
+            <div class="login__check-box">
+               {{ form.remember_me(class="login__check-input", id="user-check") }}
+               <label for="user-check" class="login__check-label">Remember me</label>
+            </div>
+         </div>
+
+         {{ form.submit(class="login__button", id="submit") }}
+
+         <div class="login__register">
+            Already have an account? <a href="/">Login</a>
+         </div>
+      </form>
+   </div>
+</body>
+
+</html>

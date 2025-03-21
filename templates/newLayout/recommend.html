@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+{% include 'newLayout/head.html' %}
+
+<body>
+    <!-- Page Preloder -->
+    <div id="preloder">
+        <div class="loader"></div>
+    </div>
+
+    {% include 'newLayout/innerNavbar.html' %}
+
+    <!-- Countdown Section Begin -->
+    <section class="countdown countdown--page spad set-bg"
+        data-setbg="{{ url_for('static', filename='layout/img/countdown-bg.jpg') }}">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <!-- Stylish Video Container -->
+                    <div id="videoContainer" class="video-box">
+                        <img src="{{ url_for('video') }}" id="video_stream" class="video-stream" />
+                    </div>
+
+                    <!-- Emotion Selection Dropdown -->
+                    <div id="emotionDropdown" class="dropdown-box mt-3">
+                        <label for="emotionSelect" class="me-2 fw-bold text-white">🎭 Pick Your Mood:</label>
+                        <select id="emotionSelect" name="emotion" class="form-select d-inline-block w-auto rounded-lg">
+                            <option value="Happy" selected>Choose Your Emotion</option>
+                            <option value="Happy">🎶 Happy</option>
+                            <option value="Sad">😢 Sad</option>
+                            <option value="Angry">😡 Angry</option>
+                            <option value="Surprise">😲 Surprise</option>
+                            <option value="Neutral">😐 Neutral</option>
+                            <option value="Fear">😨 Fear</option>
+                            <!-- <option value="disgust">🤢 Disgust</option> -->
+                        </select>
+                    </div>
+
+                    <!-- Recommend Buttons -->
+                    <div class="button-container mt-3">
+                        <form action="/recommend" method="POST" class="d-inline-block">
+                            <input type="hidden" name="choice" value="music">
+                            <input type="hidden" id="musicEmotion" name="emotion" value="happy">
+                            <button type="submit" class="recommend-btn">🎵 Recommend Music</button>
+                        </form>
+
+                        <form action="/recommend" method="POST" class="d-inline-block">
+                            <input type="hidden" name="choice" value="video">
+                            <input type="hidden" id="videoEmotion" name="emotion" value="happy">
+                            <button type="submit" class="recommend-btn">📽️ Recommend Video</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Custom Styling -->
+    <style>
+        /* Video Container Styling */
+        .video-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+            max-width: 600px;
+            margin: auto;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .video-box:hover {
+            transform: scale(1.05);
+        }
+
+        .video-stream {
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid white;
+        }
+
+        /* Emotion Dropdown Styling */
+        .dropdown-box {
+            text-align: center;
+        }
+
+        .form-select {
+            background: white !important;
+            color: black;
+            border: 2px solid #6a11cb;
+            padding: 8px 12px;
+            font-weight: bold;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Button Styling */
+        .recommend-btn {
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0 10px;
+            margin-top: 10px;
+            transition: all 0.3s ease-in-out;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .recommend-btn:hover {
+            background: linear-gradient(45deg, #2575fc, #6a11cb);
+            transform: translateY(-3px);
+            box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .recommend-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+
+    <!-- JavaScript to Handle Emotion Selection -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const videoStream = document.getElementById('video_stream');
+            const videoContainer = document.getElementById('videoContainer');
+            const emotionDropdown = document.getElementById('emotionDropdown');
+            const emotionSelect = document.getElementById('emotionSelect');
+            const musicEmotionInput = document.getElementById('musicEmotion');
+            const videoEmotionInput = document.getElementById('videoEmotion');
+
+            // Check if the video stream loads successfully
+            videoStream.onload = function () {
+                console.log("Camera detected! Hiding dropdown.");
+                videoContainer.style.display = 'block'; // Show video container
+                emotionDropdown.style.display = 'none'; // Hide dropdown
+            };
+
+            videoStream.onerror = function () {
+                console.error("Camera not detected! Showing dropdown.");
+                videoContainer.style.display = 'none'; // Hide video container
+                emotionDropdown.style.display = 'block'; // Show dropdown
+            };
+
+            // Extra check: If the video stream is empty, show dropdown
+            setTimeout(function () {
+                if (!videoStream.complete || videoStream.naturalHeight === 0) {
+                    console.warn("Camera not loading, switching to dropdown.");
+                    videoContainer.style.display = 'none';
+                    emotionDropdown.style.display = 'block';
+                } else {
+                    videoContainer.style.display = 'block';
+                    emotionDropdown.style.display = 'none';
+                }
+            }, 1000);
+
+            // Update hidden emotion inputs when dropdown value changes
+            emotionSelect.addEventListener('change', function () {
+                const selectedEmotion = this.value;
+                musicEmotionInput.value = selectedEmotion;
+                videoEmotionInput.value = selectedEmotion;
+            });
+
+            // Ensure latest emotion is submitted when button is clicked
+            document.querySelectorAll(".recommend-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    const selectedEmotion = emotionSelect.value;
+                    if (this.parentElement.querySelector("input[name='choice']").value === "music") {
+                        musicEmotionInput.value = selectedEmotion;
+                    } else {
+                        videoEmotionInput.value = selectedEmotion;
+                    }
+                });
+            });
+        });
+
+    </script>
+    <!-- Countdown Section End -->
+
+    {% if recommendations %}
+    <section class="discography spad">
+        <div class="container">
+            <div class="row justify-content-center g-4">
+                {% for item in recommendations %}
+                <div class="col-12 col-md-6 col-lg-4 d-flex justify-content-center">
+                    <div class="music-card p-3 shadow position-relative">
+                        <div class="badge-container">
+                            <span class="badge {% if type == 'video' %} badge-video {% else %} badge-audio {% endif %}">
+                                {% if type == 'video' %} 🎬 Video {% else %} 🎵 Music {% endif %}
+                            </span>
+                        </div>
+                        <div class="iframe-wrapper">
+                            {% if type == 'video' %}
+                            <!-- Embed YouTube Video -->
+                            <div class="video-container">
+                                <iframe src="https://www.youtube.com/embed/{{ item.id }}" allowfullscreen></iframe>
+                            </div>
+                            {% else %}
+                            <!-- Embed Spotify Track -->
+                            <div class="spotify-container">
+                                <iframe src="https://open.spotify.com/embed/track/{{ item.id }}?utm_source=generator"
+                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+                                </iframe>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if type == 'video' %}
+                        <h5 class="text-center mt-2 text-white">{{ item.title }}</h5>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endif %}
+
+<style>
+    /* Discography Section */
+    .discography {
+        padding: 60px 0;
+        background: linear-gradient(135deg, #1e1e2e 0%, #23263a 100%);
+        color: #fff;
+    }
+
+    /* Music Card with Glassmorphism */
+    .music-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+        text-align: center;
+        max-width: 370px;
+        width: 100%;
+        backdrop-filter: blur(12px);
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 35px;
+    }
+
+    .music-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 25px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Badge for Audio/Video */
+    .badge-container {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .badge-video {
+        background: #ff4757;
+        color: #fff;
+    }
+
+    .badge-audio {
+        background: #1db954;
+        color: #fff;
+    }
+
+    /* iFrame Wrapper */
+    .iframe-wrapper {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    /* Responsive Video Embed */
+    .video-container {
+        width: 100%;
+        overflow: hidden;
+        border-radius: 12px;
+        position: relative;
+    }
+
+    .video-container iframe {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+    }
+
+    /* Spotify Embed */
+    .spotify-container {
+        width: 100%;
+        height: 380px; /* Adjusted height */
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .spotify-container iframe {
+        width: 100%;
+        height: 100%;
+        border-radius: 12px;
+        transition: filter 0.3s ease-in-out;
+    }
+
+    /* Play Button Overlay */
+    .play-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 50px;
+        color: rgba(255, 255, 255, 0.8);
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .iframe-wrapper:hover .play-overlay {
+        opacity: 1;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .music-card {
+            max-width: 100%;
+        }
+    }
+</style>
+
+
+
+
+
+    <!-- Tours Section Begin -->
+    <section class="tours spad">
+
+    </section>
+    <!-- Tours Section End -->
+
+    {% include 'newLayout/innerFooter.html' %}
+
+    {% include 'newLayout/scripts.html' %}
+</body>
+
+</html>
